@@ -2,10 +2,12 @@ module github.com/cbytensky/bloxroute
 
 go 1.18
 
+replace github.com/cbytensky/bloxroute/common => ./common
+
 require (
-	common v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2 v1.16.4
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.18.5
+	github.com/cbytensky/bloxroute/common v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -20,5 +22,3 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.6 // indirect
 	github.com/aws/smithy-go v1.11.2 // indirect
 )
-
-replace common => ./common

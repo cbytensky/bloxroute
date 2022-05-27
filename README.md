@@ -31,7 +31,10 @@ export AWS_ACCESS_KEY_ID=EXAMPLEKEYID
 export AWS_SECRET_ACCESS_KEY=AbCdEfExampleAccessKey
 export AWS_REGION=us-east-2
 export QUEUE_URL=https://sqs.us-east-2.amazonaws.com/302642057669/test
-$GOPATH/bin/client +a:A +b:B +c:C <<EOF
+# cmdline
+$GOPATH/bin/client +a:A +b:B +c:C
+# stdin
+$GOPATH/bin/client <<EOF
 .a
 -b
 !
