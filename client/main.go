@@ -4,7 +4,6 @@ import (
 	. "github.com/cbytensky/bloxroute/common"
 
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 
@@ -13,12 +12,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 )
 
+
 var smbi = sqs.SendMessageBatchInput{
 	QueueUrl: &QueueUrl,
 	Entries:  make([]types.SendMessageBatchRequestEntry, 0),
 }
 
-var entryindex uint8
+var entryindex uint8 // index inside batch, 0..9
 
 func main() {
 
@@ -28,6 +28,7 @@ func main() {
 	for _, arg := range os.Args[1:] {
 		addtobatch(arg)
 	}
+
 	// Adding commands from stdin if it is pipe
 	stdin := os.Stdin
 	stat, err := stdin.Stat()
@@ -60,20 +61,21 @@ func addAttribute(entry types.SendMessageBatchRequestEntry, name string, value s
 func addtobatch(line string) {
 
 	entry := types.SendMessageBatchRequestEntry{
-		Id:                aws.String(string('0' + entryindex)), // Just digits '0'..'9'
+		Id:                DigitToStr(entryindex),
 		MessageAttributes: make(map[string]types.MessageAttributeValue),
-		MessageBody:       aws.String("empty"),
+		MessageBody:       aws.String(" "), // must not me empty
 	}
 
-	command := line[0]
-	valid := true
-	method := "GetAllItems"
+	command := line[0] // +, -, ., !
+	valid := true // Input validation
+	method := "GetAllItems" 
 	if len(line) == 1 {
 		valid = valid && command == '!'
 	} else {
 		namevalue := line[1:]
 		if command == '+' {
 			method = "AddItem"
+			// Dividing namevalue to name and value by colon
 			pos := strings.IndexByte(namevalue, ':')
 			valid = pos >= 0
 			if valid {
@@ -88,25 +90,19 @@ func addtobatch(line string) {
 			valid = false
 		}
 		addAttribute(entry, "name", namevalue)
-		print("name:", namevalue, " ")
 	}
 	if !valid {
 		LogErr("Malformed command: %s", line)
 		return
 	}
 	addAttribute(entry, "method", method)
-	println("Method:", method)
-	name := entry.MessageAttributes["name"].StringValue
-	if name != nil {
-		println("name:", *name)
-	}
 
 	// Adding to batch
 	smbi.Entries = append(smbi.Entries, entry)
 	entryindex += 1
 
 	// Sending if batch is full
-	if entryindex == 10 {
+	if entryindex == BatchSize {
 		sendbatch()
 		entryindex = 0
 		smbi.Entries = smbi.Entries[:0]
@@ -116,5 +112,5 @@ func addtobatch(line string) {
 func sendbatch() {
 	_, err := SqsClient.SendMessageBatch(Context, &smbi)
 	PanicIfErr(err)
-	fmt.Printf("Messages sent: %d\n", entryindex)
+	Log("INF: Messages sent: %d", entryindex)
 }

@@ -1,8 +1,17 @@
 # bloXroute test project
 
-Consists of [client](client/) and [server](server/).
+Consists of client and server.
 
 Uses Amazon SQS.
+
+Amason SQS message have attributes:
+* `method`: string, can have values only `AddItem`, `RemoveItem`, `GetItem`, `GetAllItems`;
+* `name`: string, name of data entry. Only for `AddItem`, `RemoveItem` and `GetItem`;
+* *Message body*: string, contains value of data for `AddItem`.
+
+For optimization messages are sent, received and deleted in batches of 10 or less (maximum for SQS).
+
+Messages are processed by server in threads. Number of threads is defined by number of CPUs or by `NTHREADS` environment variable it it is set.
 
 ## Building
 
@@ -55,3 +64,5 @@ Commands passed to client both by command line arguments and stdin (only if it i
 Both client and server uses `QUEUE_URL` environment variable which must me set to SQS message queue URL.
 
 Also AWS API credentials and AWS region can be also defined by environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_REGION`.
+
+S
