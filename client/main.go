@@ -3,9 +3,9 @@ package main
 import (
 	. "common"
 
+	"bufio"
 	"fmt"
 	"os"
-	"bufio"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 )
 
-var smbi = sqs.SendMessageBatchInput{ QueueUrl: &QueueUrl }
+var smbi = sqs.SendMessageBatchInput{QueueUrl: &QueueUrl}
 var entryindex uint8
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 	stdin := os.Stdin
 	stat, err := stdin.Stat()
 	PanicIfErr(err)
-	if stat.Mode() & os.ModeCharDevice == 0 { // Checking stdin is not TTY
+	if stat.Mode()&os.ModeCharDevice == 0 { // Checking stdin is not TTY
 		scanner := bufio.NewScanner(stdin)
 		for {
 			scanner.Scan()
@@ -50,7 +50,7 @@ var entries = make([]types.SendMessageBatchRequestEntry, 0)
 
 func addAttribute(entry types.SendMessageBatchRequestEntry, name string, value string) {
 	entry.MessageAttributes[name] = types.MessageAttributeValue{
-		DataType: aws.String("String"),
+		DataType:    aws.String("String"),
 		StringValue: &value,
 	}
 }
@@ -58,9 +58,9 @@ func addAttribute(entry types.SendMessageBatchRequestEntry, name string, value s
 func addtobatch(line string) {
 
 	entry := types.SendMessageBatchRequestEntry{
-		Id: aws.String(string('0' + entryindex)), // Just digits '0'..'9'
+		Id:                aws.String(string('0' + entryindex)), // Just digits '0'..'9'
 		MessageAttributes: make(map[string]types.MessageAttributeValue),
-		MessageBody: aws.String("empty"),
+		MessageBody:       aws.String("empty"),
 	}
 
 	command := line[0]
@@ -105,7 +105,7 @@ func addtobatch(line string) {
 	}
 }
 
-func sendbatch(){
+func sendbatch() {
 	smbi.Entries = entries
 	_, err := SqsClient.SendMessageBatch(Context, &smbi)
 	PanicIfErr(err)

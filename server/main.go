@@ -10,8 +10,8 @@ import (
 )
 
 type elem struct {
-		order uint64
-		value *string
+	order uint64
+	value *string
 }
 
 func main() {
@@ -22,9 +22,9 @@ func main() {
 	storage := make(map[string]elem)
 
 	rmi := &sqs.ReceiveMessageInput{
-		MessageAttributeNames: []string{ string(types.QueueAttributeNameAll) },
-		QueueUrl: &QueueUrl,
-		MaxNumberOfMessages: 10,
+		MessageAttributeNames: []string{string(types.QueueAttributeNameAll)},
+		QueueUrl:              &QueueUrl,
+		MaxNumberOfMessages:   10,
 	}
 
 	for {
@@ -51,7 +51,7 @@ func main() {
 								fmt.Printf("WRN: Overwriting: %s\n", *name)
 							}
 							counter += 1
-							storage[*name] = elem{ counter, message.Body }
+							storage[*name] = elem{counter, message.Body}
 							mutex.Unlock()
 
 						case "RemoveItem":
