@@ -53,7 +53,7 @@ func main() {
 	Log("INF: Processing threads: %d", nthreads)
 
 	// Channel for passing received messages from main thread to processing goroutines
-	messageChan := make(chan types.Message, BatchSize) // BatchSize for challen length seems to be good enough
+	messageChan := make(chan *types.Message, BatchSize) // BatchSize for chan length looks good enough
 
 	// Launching processing goroutines
 	for i := 0; i < nthreads; i++ {
@@ -129,7 +129,9 @@ func main() {
 			numRecieved := len(output.Messages)
 			if numRecieved > 0 {
 				Log("INF: Messages received: %d", numRecieved)
-				for i, message := range output.Messages {
+				messages := output.Messages
+				for i := 0; i < len(messages); i++ {
+					message := &messages[i]
 					// Sending message to processing goroutines
 					messageChan <- message
 					// Adding message receipt to DeleteMessageBatch
