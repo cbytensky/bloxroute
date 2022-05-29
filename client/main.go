@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 )
 
-
 var smbi = sqs.SendMessageBatchInput{
 	QueueUrl: &QueueUrl,
 	Entries:  make([]types.SendMessageBatchRequestEntry, 0),
@@ -67,8 +66,8 @@ func addtobatch(line string) {
 	}
 
 	command := line[0] // +, -, ., !
-	valid := true // Input validation
-	method := "GetAllItems" 
+	valid := true      // Input validation
+	method := "GetAllItems"
 	if len(line) == 1 {
 		valid = valid && command == '!'
 	} else {

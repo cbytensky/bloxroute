@@ -29,11 +29,14 @@ var mutex = sync.RWMutex{}
 var counter uint64
 
 // Type for slice entry for sorting for GetAllItems
-type sortElem struct{order uint64; name string; value *string}
+type sortElem struct {
+	order uint64
+	name  string
+	value *string
+}
 
 func main() {
 	CommonInit()
-
 
 	rmi := &sqs.ReceiveMessageInput{ // reused for ReceiveMessage call
 		MessageAttributeNames: []string{string(types.QueueAttributeNameAll)}, // We want to receive all attributes
@@ -92,10 +95,10 @@ func main() {
 				case "GetAllItems":
 					mutex.RLock()
 					// We need to sort all items by `order`
-					storageSlice := make([]*sortElem , 0, len(storage)) // Slice for sorting
+					storageSlice := make([]*sortElem, 0, len(storage)) // Slice for sorting
 					// Copying data from storage map to slice
 					for name, elem := range storage {
-						storageSlice = append(storageSlice, &sortElem{ elem.order, name, elem.value })
+						storageSlice = append(storageSlice, &sortElem{elem.order, name, elem.value})
 					}
 					//Sorting
 					sort.Slice(storageSlice, func(i, j int) bool {
