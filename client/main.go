@@ -12,12 +12,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 )
 
-var smbi = sqs.SendMessageBatchInput{
+var smbi = sqs.SendMessageBatchInput{ // reused in SendMessageBatch
 	QueueUrl: &QueueUrl,
-	Entries:  make([]types.SendMessageBatchRequestEntry, 0),
+	Entries:  make([]types.SendMessageBatchRequestEntry, 0, BatchSize),
 }
-
-var entryindex uint8 // index inside batch, 0..9
+var entries = &smbi.Entries
 
 func main() {
 
@@ -45,26 +44,21 @@ func main() {
 	}
 
 	// Sending last batch
-	if entryindex > 0 {
+	if len(*entries) > 0 {
 		sendbatch()
 	}
 }
 
-func addAttribute(entry types.SendMessageBatchRequestEntry, name string, value string) {
-	entry.MessageAttributes[name] = types.MessageAttributeValue{
-		DataType:    aws.String("String"),
-		StringValue: &value,
-	}
-}
+var entry *types.SendMessageBatchRequestEntry // used also in addAttribute
 
 func addtobatch(line string) {
-
-	entry := types.SendMessageBatchRequestEntry{
-		Id:                DigitToStr(entryindex),
-		MessageAttributes: make(map[string]types.MessageAttributeValue),
-		MessageBody:       aws.String(" "), // must not me empty
-	}
-
+	index := len(*entries)
+	*entries = append(*entries, types.SendMessageBatchRequestEntry{
+		Id:                DigitToStr(index),                               // '0' .. '9'
+		MessageAttributes: make(map[string]types.MessageAttributeValue, 2), // no more than 2 attributes
+		MessageBody:       aws.String(" "),                                 // must not me empty
+	})
+	entry = &(*entries)[index]
 	command := line[0] // +, -, ., !
 	valid := true      // Input validation
 	method := "GetAllItems"
@@ -88,28 +82,31 @@ func addtobatch(line string) {
 		} else {
 			valid = false
 		}
-		addAttribute(entry, "name", namevalue)
+		addAttribute("name", namevalue)
 	}
 	if !valid {
 		LogErr("Malformed command: %s", line)
 		return
 	}
-	addAttribute(entry, "method", method)
-
-	// Adding to batch
-	smbi.Entries = append(smbi.Entries, entry)
-	entryindex += 1
+	addAttribute("method", method)
 
 	// Sending if batch is full
-	if entryindex == BatchSize {
+	if index+1 == BatchSize {
 		sendbatch()
-		entryindex = 0
-		smbi.Entries = smbi.Entries[:0]
+	}
+}
+
+var refString = aws.String("String") // reused as DataType
+
+func addAttribute(name string, value string) {
+	entry.MessageAttributes[name] = types.MessageAttributeValue{
+		DataType:    refString,
+		StringValue: aws.String(value),
 	}
 }
 
 func sendbatch() {
 	_, err := SqsClient.SendMessageBatch(Context, &smbi)
 	PanicIfErr(err)
-	Log("INF: Messages sent: %d", entryindex)
+	Log("INF: Messages sent: %d", len(*entries))
 }

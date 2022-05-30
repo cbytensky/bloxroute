@@ -27,14 +27,14 @@ func PanicIfErr(err error) {
 	}
 }
 
-func DigitToStr(digit uint8) *string {
-	return aws.String(string('0' + digit))
-}
-
-func LogErr(format string, args ...interface{}) {
-	fmt.Printf("ERR: " + format + "\n", args...)
+func DigitToStr(digit int) *string {
+	return aws.String(string('0' + uint8(digit)))
 }
 
 func Log(format string, args ...interface{}) {
 	fmt.Printf(format + "\n", args...)
+}
+
+func LogErr(format string, args ...interface{}) {
+	Log("ERR: " + format, args...)
 }

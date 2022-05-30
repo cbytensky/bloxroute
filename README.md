@@ -9,7 +9,9 @@ Amason SQS message have attributes:
 * `name`: string, name of data entry. Only for `AddItem`, `RemoveItem` and `GetItem`;
 * *Message body*: string, contains value of data for `AddItem`.
 
-For optimization messages are sent, received and deleted in batches of 10 or less (maximum for SQS).
+Messages are sent, received and deleted in batches of 10 or less (SQS feature).
+
+When `AddItem` overwrites data, order is preserverd.
 
 Messages are processed by server in threads. Number of threads is defined by number of CPUs or by `NTHREADS` environment variable it it is set.
 
